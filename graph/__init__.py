@@ -1,0 +1,4 @@
+from networkx.classes.multidigraph import MultiDiGraph
+from retworkx_graph import RetworkXMultiDiGraph
+
+MultiDiGraph = RetworkXMultiDiGraph

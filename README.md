@@ -1,2 +1,3 @@
 # graph
-Wrapped of Python graph libraries with type annotations
+
+Wrapper of popular network libraries with type annotation
