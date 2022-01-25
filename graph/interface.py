@@ -4,36 +4,47 @@ from typing import (
     Callable,
     Dict,
     Generic,
-    Iterator,
+    Iterable,
     List,
     Optional,
     Tuple,
     TypeVar,
-    Union,
 )
 
+from typing_extensions import Self
 
 NodeID = TypeVar("NodeID", int, str)
 EdgeID = TypeVar("EdgeID", int, str)
-EdgeKey = Union[str, int]
-Node = TypeVar("Node")
-Edge = TypeVar("Edge")
+EdgeKey = TypeVar("EdgeKey", int, str)
+EdgeTriple = Tuple[NodeID, NodeID, EdgeID]
 
 
-class IGraph(Generic[NodeID, EdgeID, Node, Edge]):
-    @abstractmethod
-    def num_edges(self) -> int:
-        """Return the number of edges in the graph"""
-        pass
+class BaseNode(Generic[NodeID]):
+    def __init__(self, id: NodeID):
+        self.id = id
+
+
+class BaseEdge(Generic[NodeID, EdgeKey]):
+    def __init__(self, id: int, source: NodeID, target: NodeID, key: EdgeKey):
+        self.id = id
+        self.source = source
+        self.target = target
+        self.key = key
+
+
+# ideally, we want to have higher-kinded type, but we can't do it with current typing system yet
+Node = TypeVar("Node", bound=BaseNode)
+Edge = TypeVar("Edge", bound=BaseEdge)
+
+
+class IGraph(Generic[NodeID, EdgeID, EdgeKey, Node, Edge], ABC):
+    """Represent a graph. The graph is directed by default, but for undirected graph, methods won't take into
+    account the direction of the edges. For example, `successors` and `predecessors` returns the same results
+    """
 
     @abstractmethod
     def num_nodes(self) -> int:
         """Return the number of nodes in the graph"""
-        pass
-
-    @abstractmethod
-    def edges(self) -> List[Edge]:
-        """Return a list of all edges"""
         pass
 
     @abstractmethod
@@ -42,18 +53,8 @@ class IGraph(Generic[NodeID, EdgeID, Node, Edge]):
         pass
 
     @abstractmethod
-    def successors(self, nid: NodeID) -> List[Node]:
-        """Get the successors of a node"""
-        pass
-
-    @abstractmethod
-    def predecessors(self, nid: NodeID) -> List[Node]:
-        """Get the predecessors of a node"""
-        pass
-
-    @abstractmethod
-    def filter_edges(self, fn: Callable[[Edge], bool]) -> List[Node]:
-        """Get edges in the graph filtered by the given function"""
+    def iter_nodes(self) -> Iterable[Node]:
+        """Iter nodes in the graph. Still create a new list everytime it's called"""
         pass
 
     @abstractmethod
@@ -62,58 +63,8 @@ class IGraph(Generic[NodeID, EdgeID, Node, Edge]):
         pass
 
     @abstractmethod
-    def iter_edges(self) -> Iterator[Edge]:
-        """Iter edges in the graph. Still create a new list everytime it's called"""
-        pass
-
-    @abstractmethod
-    def iter_nodes(self) -> Iterator[Node]:
-        """Iter nodes in the graph. Still create a new list everytime it's called"""
-        pass
-
-    @abstractmethod
-    def iter_filter_edges(self, fn: Callable[[Edge], bool]) -> Iterator[Node]:
-        """Iter edges in the graph filtered by the given function"""
-        pass
-
-    @abstractmethod
-    def iter_filter_nodes(self, fn: Callable[[Node], bool]) -> Iterator[Node]:
+    def iter_filter_nodes(self, fn: Callable[[Node], bool]) -> Iterable[Node]:
         """Iter nodes in the graph filtered by the given function"""
-        pass
-
-    @abstractmethod
-    def add_node(self, node: Node) -> NodeID:
-        """Add a new node to the graph."""
-        pass
-
-    @abstractmethod
-    def add_edge(self, source: NodeID, target: NodeID, edge: Edge) -> EdgeID:
-        """Add an edge between 2 nodes and return id of the new edge"""
-        pass
-
-    @abstractmethod
-    def remove_node(self, nid: NodeID):
-        """Remove a node from the graph. If the node is not present in the graph it will be ignored and this function will have no effect."""
-        pass
-
-    @abstractmethod
-    def remove_edge(self, eid: EdgeID):
-        """Remove an edge identified by the provided id"""
-        pass
-
-    @abstractmethod
-    def update_edge(self, eid: EdgeID, edge: Edge):
-        """Update an edge's content inplace"""
-        pass
-
-    @abstractmethod
-    def update_node(self, nid: NodeID, node: Node):
-        """Update the node data inplace"""
-        pass
-
-    @abstractmethod
-    def remove_edges_between_nodes(self, uid: NodeID, vid: NodeID):
-        """Remove edges between 2 nodes."""
         pass
 
     @abstractmethod
@@ -124,6 +75,21 @@ class IGraph(Generic[NodeID, EdgeID, Node, Edge]):
     @abstractmethod
     def get_node(self, nid: NodeID) -> Node:
         """Get the node by id"""
+        pass
+
+    @abstractmethod
+    def add_node(self, node: Node) -> NodeID:
+        """Add a new node to the graph."""
+        pass
+
+    @abstractmethod
+    def remove_node(self, nid: NodeID):
+        """Remove a node from the graph. If the node is not present in the graph it will be ignored and this function will have no effect."""
+        pass
+
+    @abstractmethod
+    def update_node(self, node: Node):
+        """Update the node data inplace"""
         pass
 
     @abstractmethod
@@ -138,16 +104,6 @@ class IGraph(Generic[NodeID, EdgeID, Node, Edge]):
         pass
 
     @abstractmethod
-    def has_edges_between_nodes(self, uid: NodeID, vid: NodeID) -> bool:
-        """Return True if there is an edge between 2 nodes."""
-        pass
-
-    @abstractmethod
-    def get_edges_between_nodes(self, uid: NodeID, vid: NodeID) -> List[Edge]:
-        """Return the edge data for all the edges between 2 nodes."""
-        pass
-
-    @abstractmethod
     def degree(self, nid: NodeID) -> int:
         """Get the degree of a node"""
         pass
@@ -158,29 +114,55 @@ class IGraph(Generic[NodeID, EdgeID, Node, Edge]):
         pass
 
     @abstractmethod
-    def in_edges(self, vid: NodeID) -> List[Tuple[NodeID, Edge]]:
-        """Get incoming edges of a node. Return a list of tuples of (source id, edge data)"""
-        pass
-
-    @abstractmethod
     def out_degree(self, nid: NodeID) -> int:
         """Get the degree of a node for outbound edges."""
         pass
 
     @abstractmethod
-    def out_edges(self, uid: NodeID) -> List[Tuple[NodeID, Edge]]:
-        """Get outgoing edges of a node. Return a list of tuples of (target id, edge data)"""
+    def successors(self, nid: NodeID) -> List[Node]:
+        """Get the successors of a node"""
         pass
 
     @abstractmethod
-    def copy(self):
-        """Create a shallow copy of the graph"""
+    def predecessors(self, nid: NodeID) -> List[Node]:
+        """Get the predecessors of a node"""
         pass
 
+    @abstractmethod
+    def num_edges(self) -> int:
+        """Return the number of edges in the graph"""
+        pass
 
-class ICanonicalGraph(
-    Generic[NodeID, EdgeID, Node, Edge], IGraph[NodeID, EdgeID, Node, Edge]
-):
+    @abstractmethod
+    def edges(self) -> List[Edge]:
+        """Return a list of all edges"""
+        pass
+
+    @abstractmethod
+    def iter_edges(self) -> Iterable[Edge]:
+        """Iter edges in the graph. Still create a new list everytime it's called"""
+        pass
+
+    @abstractmethod
+    def filter_edges(self, fn: Callable[[Edge], bool]) -> List[Edge]:
+        """Get edges in the graph filtered by the given function"""
+        pass
+
+    @abstractmethod
+    def iter_filter_edges(self, fn: Callable[[Edge], bool]) -> Iterable[Edge]:
+        """Iter edges in the graph filtered by the given function"""
+        pass
+
+    @abstractmethod
+    def has_edge(self, eid: EdgeID) -> bool:
+        """Check if a edge with given id exists in the graph"""
+        pass
+
+    @abstractmethod
+    def get_edge(self, eid: EdgeID) -> Edge:
+        """Get the edge by id"""
+        pass
+
     @abstractmethod
     def add_edge(self, edge: Edge) -> EdgeID:
         """Add an edge between 2 nodes and return id of the new edge"""
@@ -192,28 +174,8 @@ class ICanonicalGraph(
         pass
 
     @abstractmethod
-    def update_node(self, node: Node):
-        """Update the node data inplace"""
-        pass
-
-    @abstractmethod
-    def in_edges(self, vid: NodeID) -> List[Edge]:
-        """Get incoming edges of a node. Return a list of tuples of (source id, edge data)"""
-        pass
-
-    @abstractmethod
-    def group_in_edges(self, vid: NodeID) -> List[Tuple[Node, Dict[EdgeKey, Edge]]]:
-        """Get incoming edges of a node, but group edges by their predecessors and key of each edge"""
-        pass
-
-    @abstractmethod
-    def out_edges(self, uid: NodeID) -> List[Edge]:
-        """Get outgoing edges of a node. Return a list of tuples of (target id, edge data)"""
-        pass
-
-    @abstractmethod
-    def group_out_edges(self, uid: NodeID) -> List[Tuple[Node, Dict[EdgeKey, Edge]]]:
-        """Get outgoing edges of a node, but group edges by their successors and key of each edge"""
+    def remove_edge(self, eid: EdgeID):
+        """Remove an edge identified by the provided id"""
         pass
 
     @abstractmethod
@@ -222,13 +184,82 @@ class ICanonicalGraph(
         pass
 
     @abstractmethod
+    def remove_edges_between_nodes(self, uid: NodeID, vid: NodeID):
+        """Remove edges between 2 nodes."""
+        pass
+
+    @abstractmethod
     def has_edge_between_nodes(self, uid: NodeID, vid: NodeID, key: EdgeKey) -> bool:
         """Return True if there is an edge with key between 2 nodes."""
         pass
 
     @abstractmethod
+    def has_edges_between_nodes(self, uid: NodeID, vid: NodeID) -> bool:
+        """Return True if there is an edge between 2 nodes."""
+        pass
+
+    @abstractmethod
     def get_edge_between_nodes(self, uid: NodeID, vid: NodeID, key: EdgeKey) -> Edge:
         """Get an edge with key between 2 nodes. Raise KeyError if not found."""
+        pass
+
+    @abstractmethod
+    def get_edges_between_nodes(self, uid: NodeID, vid: NodeID) -> List[Edge]:
+        """Return the edge data for all the edges between 2 nodes."""
+        pass
+
+    @abstractmethod
+    def in_edges(self, vid: NodeID) -> List[Edge]:
+        """Get incoming edges of a node. Return a list of tuples of (source id, edge data)"""
+        pass
+
+    @abstractmethod
+    def out_edges(self, uid: NodeID) -> List[Edge]:
+        """Get outgoing edges of a node. Return a list of tuples of (target id, edge data)"""
+        pass
+
+    @abstractmethod
+    def group_in_edges(self, vid: NodeID) -> List[Tuple[Node, Dict[EdgeKey, Edge]]]:
+        """Get incoming edges of a node, but group edges by their predecessors and key of each edge"""
+        pass
+
+    @abstractmethod
+    def group_out_edges(self, uid: NodeID) -> List[Tuple[Node, Dict[EdgeKey, Edge]]]:
+        """Get outgoing edges of a node, but group edges by their successors and key of each edge"""
+        pass
+
+    @abstractmethod
+    def has_parallel_edges(self) -> bool:
+        """
+        Detect if the graph has parallel edges or not.
+        Return True if the graph has parallel edges, otherwise False
+        """
+        pass
+
+    @abstractmethod
+    def subgraph_from_nodes(self, node_ids: Iterable[NodeID]) -> Self:
+        """Get a subgraph containing only the given node ids
+        The subgraph will share the same references to the nodes and edges in the original graph.
+        """
+        pass
+
+    @abstractmethod
+    def subgraph_from_edges(self, edge_ids: Iterable[int]) -> Self:
+        """Get a subgraph containing only the given edge ids.
+        The subgraph will share the same references to the nodes and edges in the original graph.
+        """
+        pass
+
+    @abstractmethod
+    def subgraph_from_edge_triples(self, edge_triples: Iterable[EdgeTriple]) -> Self:
+        """Get a subgraph containing only the given edge triples (source, target, key).
+        The subgraph will share the same references to the nodes and edges in the original graph.
+        """
+        pass
+
+    @abstractmethod
+    def copy(self) -> Self:
+        """Create a shallow copy of the graph"""
         pass
 
     @abstractmethod
