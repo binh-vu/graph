@@ -10,6 +10,7 @@ from typing import (
     TypeVar,
     Union,
 )
+from copy import deepcopy
 from typing_extensions import Self
 from graph.retworkx.digraph import _RetworkXDiGraph
 from retworkx import NoEdgeBetweenNodes  # type: ignore
@@ -25,6 +26,15 @@ class RetworkXStrDiGraph(
     _RetworkXDiGraph[str, EdgeKey, Node, Edge],
     IGraph[str, str, EdgeKey, Node, Edge],
 ):
+    """A directed graph implementation using retworkx.
+
+    Each edge is uniquely identified by its id or a triple of (source, target, key)
+
+    Args:
+        check_cycle (bool, optional): whether to check cycle during insertion or updating. Defaults to False.
+        multigraph (bool, optional): whether allowing parallel edges. Defaults to True. When False if a method call is made that would add parallel edges the the weight/weight from that method call will be used to update the existing edge in place
+    """
+
     def __init__(self, check_cycle: bool = False, multigraph: bool = True):
         super().__init__(check_cycle, multigraph)
         # mapping from string id to integer id
@@ -161,6 +171,22 @@ class RetworkXStrDiGraph(
         """Get incoming edges of a node. Return a list of tuples of (source id, edge data)"""
         return [edge for uid, _, edge in self._graph.in_edges(self.idmap[vid])]
 
+    def filter_in_edges_by_key(self, vid: str, key: EdgeKey) -> List[Edge]:
+        """Get incoming edges of a node with key."""
+        return [
+            edge
+            for _, _, edge in self._graph.in_edges(self.idmap[vid])
+            if edge.key == key
+        ]
+
+    def filter_out_edges_by_key(self, uid: str, key: EdgeKey) -> List[Edge]:
+        """Get outgoing edges of a node with key"""
+        return [
+            edge
+            for _, _, edge in self._graph.out_edges(self.idmap[uid])
+            if edge.key == key
+        ]
+
     def out_edges(self, uid: str) -> List[Edge]:
         """Get outgoing edges of a node. Return a list of tuples of (target id, edge data)"""
         return [edge for _, vid, edge in self._graph.out_edges(self.idmap[uid])]
@@ -212,6 +238,14 @@ class RetworkXStrDiGraph(
     def copy(self) -> Self:
         g = super().copy()
         g.idmap = g.idmap.copy()
+        return g
+
+    def deep_copy(self) -> Self:
+        g = self.copy()
+        for u in g._graph.nodes():
+            g._graph[self.idmap[u.id]] = deepcopy(u)
+        for e in g._graph.edges():
+            g._graph.update_edge_by_index(e.id, deepcopy(e))
         return g
 
     def check_integrity(self) -> bool:

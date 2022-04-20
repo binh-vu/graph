@@ -42,9 +42,15 @@ def digraph_all_simple_paths(
         target = g.idmap[target]
 
     output = []
+    visited_paths = set()
     for nodes in retworkx.digraph_all_simple_paths(
         g._graph, source, target, min_depth, cutoff
     ):
+        path_id = tuple(nodes)
+        if path_id in visited_paths:
+            continue
+
+        visited_paths.add(path_id)
         path = []
         for i in range(1, len(nodes)):
             path.append(g._graph.get_all_edge_data(nodes[i - 1], nodes[i]))

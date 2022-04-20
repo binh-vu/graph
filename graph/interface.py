@@ -214,8 +214,18 @@ class IGraph(Generic[NodeID, EdgeID, EdgeKey, Node, Edge], ABC):
         pass
 
     @abstractmethod
+    def filter_in_edges_by_key(self, vid: NodeID, key: EdgeKey) -> List[Edge]:
+        """Get incoming edges of a node with key."""
+        pass
+
+    @abstractmethod
     def out_edges(self, uid: NodeID) -> List[Edge]:
         """Get outgoing edges of a node. Return a list of tuples of (target id, edge data)"""
+        pass
+
+    @abstractmethod
+    def filter_out_edges_by_key(self, uid: NodeID, key: EdgeKey) -> List[Edge]:
+        """Get outgoing edges of a node with key."""
         pass
 
     @abstractmethod

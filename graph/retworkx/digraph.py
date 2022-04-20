@@ -1,3 +1,4 @@
+from copy import copy, deepcopy
 import warnings
 from typing import (
     Any,
@@ -22,7 +23,7 @@ class _RetworkXDiGraph(IGraph[NodeID, int, EdgeKey, Node, Edge]):
 
     Args:
         check_cycle (bool, optional): whether to check cycle during insertion or updating. Defaults to False.
-        multigraph (bool, optional): whether allowing parallel edges. Defaults to True.
+        multigraph (bool, optional): whether allowing parallel edges. Defaults to True. When False if a method call is made that would add parallel edges the the weight/weight from that method call will be used to update the existing edge in place
     """
 
     def __init__(self, check_cycle: bool = False, multigraph: bool = True):
@@ -227,9 +228,17 @@ class _RetworkXDiGraph(IGraph[NodeID, int, EdgeKey, Node, Edge]):
         """Get incoming edges of a node. Return a list of tuples of (source id, edge data)"""
         return [edge for _, _, edge in self._graph.in_edges(vid)]
 
+    def filter_in_edges_by_key(self, vid: NodeID, key: EdgeKey) -> List[Edge]:
+        """Get incoming edges of a node with key."""
+        return [edge for _, _, edge in self._graph.in_edges(vid) if edge.key == key]
+
     def out_edges(self, uid: NodeID) -> List[Edge]:
         """Get outgoing edges of a node. Return a list of tuples of (target id, edge data)"""
         return [edge for _, _, edge in self._graph.out_edges(uid)]
+
+    def filter_out_edges_by_key(self, uid: NodeID, key: EdgeKey) -> List[Edge]:
+        """Get outgoing edges of a node with key"""
+        return [edge for _, _, edge in self._graph.out_edges(uid) if edge.key == key]
 
     def group_in_edges(self, vid: NodeID) -> List[Tuple[Node, Dict[EdgeKey, Edge]]]:
         """Get incoming edges of a node, but group edges by their predecessors and key of each edge"""
@@ -303,6 +312,17 @@ class _RetworkXDiGraph(IGraph[NodeID, int, EdgeKey, Node, Edge]):
         g._graph = g._graph.copy()
         return g
 
+    def deep_copy(self) -> Self:
+        g = self.__class__.__new__(self.__class__)
+        g.__dict__ = self.__dict__.copy()
+        g._graph = g._graph.copy()
+
+        for u in self._graph.nodes():
+            self._graph[u.id] = deepcopy(u)
+        for e in self._graph.edges():
+            self._graph.update_edge_by_index(e.id, deepcopy(e))
+        return g
+
     def check_integrity(self) -> bool:
         """Check if ids/refs in the graph are consistent"""
         for nid in self._graph.node_indexes():
@@ -337,11 +357,16 @@ class _RetworkXDiGraph(IGraph[NodeID, int, EdgeKey, Node, Edge]):
 
     def __setstate__(self, state):
         """Reload the state of the graph. This function is often called in pickling and copy
-        This does not guarantee to keep the same edge id
+        This does not guarantee to keep the same edge id.
+
         """
         self.__dict__ = dict.copy(state)
         for eid, (_, _, edge) in self._graph.edge_index_map().items():
+            # need to copy as we may serialize an object containing two graphs that share
+            # same edges by reference
+            edge = copy(edge)
             edge.id = eid
+            self._graph.update_edge_by_index(eid, edge)
         return self
 
 
