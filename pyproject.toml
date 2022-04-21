@@ -5,9 +5,11 @@ description = "Wrappers of popular network libraries with type annotation"
 authors = ["Binh Vu <binh@toan2.com>"]
 license = "MIT"
 homepage = "https://github.com/binh-vu/graph"
+repository = "https://github.com/binh-vu/graph"
 packages = [
     { include = "graph" }
 ]
+readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.8"
