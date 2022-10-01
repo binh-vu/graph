@@ -13,7 +13,7 @@ from typing import (
 from graph.interface import Edge, EdgeKey, IGraph, Node, NodeID
 from typing_extensions import Self
 
-from retworkx import NoEdgeBetweenNodes, PyDiGraph  # type: ignore
+from retworkx import NoEdgeBetweenNodes, PyDiGraph, ancestors, descendants  # type: ignore
 
 
 class _RetworkXDiGraph(IGraph[NodeID, int, EdgeKey, Node, Edge]):
@@ -106,6 +106,14 @@ class _RetworkXDiGraph(IGraph[NodeID, int, EdgeKey, Node, Edge]):
     def predecessors(self, nid: NodeID) -> List[Node]:
         """Get the predecessors of a node"""
         return self._graph.predecessors(nid)
+
+    def ancestors(self, nid: NodeID) -> List[Node]:
+        """Get the ancestors of a node"""
+        return [self._graph.get_node_data(a) for a in ancestors(self._graph, nid)]
+
+    def descendants(self, nid: NodeID) -> List[Node]:
+        """Get the descendants of a node"""
+        return [self._graph.get_node_data(d) for d in descendants(self._graph, nid)]
 
     def num_edges(self) -> int:
         """Return the number of edges in the graph"""

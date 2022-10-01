@@ -129,6 +129,16 @@ class IGraph(Generic[NodeID, EdgeID, EdgeKey, Node, Edge], ABC):
         pass
 
     @abstractmethod
+    def ancestors(self, nid: NodeID) -> List[Node]:
+        """Get the ancestors of a node"""
+        pass
+
+    @abstractmethod
+    def descendants(self, nid: NodeID) -> List[Node]:
+        """Get the descendants of a node"""
+        pass
+
+    @abstractmethod
     def num_edges(self) -> int:
         """Return the number of edges in the graph"""
         pass
