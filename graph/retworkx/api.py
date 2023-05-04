@@ -119,5 +119,23 @@ def digraph_find_cycle(
         g: The graph to find the cycle in
         source: node id to find a cycle for
     """
+    if isinstance(g, RetworkXStrDiGraph):
+        source = g.idmap[source]
     cycle = retworkx.digraph_find_cycle(g._graph, source)
     return [g._graph.get_edge_data(uid, vid) for uid, vid in cycle]
+
+
+def topological_sort(g: _RetworkXDiGraph[NodeID, EdgeKey, Node, Edge]) -> list[NodeID]:
+    """
+    Return a list of node ids in topological sort order. The first node will have no incoming edges and the last node will
+    have no outgoing edges if the graph is a DAG. In order words, a node will appear before any nodes it has edges to.
+
+    Args:
+        g: The graph to find the topological sort for
+    """
+    if isinstance(g, RetworkXStrDiGraph):
+        return [
+            g._graph.get_node_data(uid).id
+            for uid in retworkx.topological_sort(g._graph)
+        ]
+    return list(retworkx.topological_sort(g._graph))
