@@ -1,14 +1,12 @@
-from typing import List, Any, Optional, Set
-from graph.retworkx.digraph import (
-    _RetworkXDiGraph,
-    NodeID,
-    EdgeKey,
-    Node,
-    Edge,
-)
-from graph.retworkx.str_digraph import RetworkXStrDiGraph
-import retworkx
+from __future__ import annotations
+
 from itertools import product
+from typing import Any, Optional
+
+import retworkx
+
+from graph.retworkx.digraph import Edge, EdgeKey, Node, NodeID, _RetworkXDiGraph
+from graph.retworkx.str_digraph import RetworkXStrDiGraph
 
 
 def digraph_all_simple_paths(
@@ -17,7 +15,7 @@ def digraph_all_simple_paths(
     target: NodeID,
     min_depth: Optional[int] = None,
     cutoff: Optional[int] = None,
-) -> List[List[Edge]]:
+) -> list[list[Edge]]:
     """
     Return all simple paths between 2 nodes in a PyDiGraph object
     A simple path is a path with no repeated nodes.
@@ -59,7 +57,7 @@ def digraph_all_simple_paths(
     return output
 
 
-def dag_longest_path(g: _RetworkXDiGraph[NodeID, EdgeKey, Node, Edge]) -> List[NodeID]:
+def dag_longest_path(g: _RetworkXDiGraph[NodeID, EdgeKey, Node, Edge]) -> list[NodeID]:
     """
     Return the longest path in a DAG
 
@@ -85,7 +83,7 @@ def is_weakly_connected(g: _RetworkXDiGraph[NodeID, EdgeKey, Node, Edge]) -> boo
 
 def weakly_connected_components(
     g: _RetworkXDiGraph[NodeID, EdgeKey, Node, Edge]
-) -> List[Set[NodeID]]:
+) -> list[set[NodeID]]:
     """
     Return the weakly connected components of the graph
 
@@ -111,7 +109,7 @@ def has_cycle(g: _RetworkXDiGraph[NodeID, EdgeKey, Node, Edge]) -> bool:
 def digraph_find_cycle(
     g: _RetworkXDiGraph[NodeID, EdgeKey, Node, Edge],
     source: NodeID,
-) -> List[Edge]:
+) -> list[Edge]:
     """
     Return the first cycle encountered during DFS of a given PyDiGraph from a node, empty list is returned if no cycle is found.
 
