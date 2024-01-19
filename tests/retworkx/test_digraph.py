@@ -75,7 +75,7 @@ class TestCopy:
 
 class TestPickle:
     @staticmethod
-    def test_pickle_does_not_keep_original_edge_id(graph1: TestDiGraph):
+    def test_pickle_keep_original_edge_id(graph1: TestDiGraph):
         g = pickle.loads(pickle.dumps(graph1))
         assert g.check_integrity()
         # node id is the same
@@ -87,10 +87,10 @@ class TestPickle:
         # but edge id is different
         assert g.edges() == [
             Edge(0, 1, id=0),
-            Edge(1, 2, id=1),
-            Edge(0, 2, id=2),
+            Edge(0, 2, id=1),
+            Edge(1, 2, id=2),
         ]
-        assert g != graph1
+        assert g == graph1
 
     @staticmethod
     def test_pickle_node_deletion(graph1: TestDiGraph):
@@ -102,9 +102,9 @@ class TestPickle:
             Node(2),
         ]
         assert g.edges() == [
-            Edge(0, 2, id=0),
+            Edge(0, 2, id=1),
         ]
-        assert g != graph1
+        assert g == graph1
 
     @staticmethod
     def test_pickle_edge_deletion(graph1: TestDiGraph):
@@ -117,7 +117,7 @@ class TestPickle:
             Node(2),
         ]
         assert g.edges() == [
-            Edge(1, 2, id=0),
             Edge(0, 2, id=1),
+            Edge(1, 2, id=2),
         ]
-        assert g != graph1
+        assert g == graph1

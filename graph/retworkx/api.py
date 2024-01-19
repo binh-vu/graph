@@ -1,10 +1,8 @@
 from __future__ import annotations
 
 from itertools import product
-from typing import Any, Optional
-
-import retworkx
-
+from typing import Optional
+import rustworkx
 from graph.retworkx.digraph import Edge, EdgeKey, Node, NodeID, _RetworkXDiGraph
 from graph.retworkx.str_digraph import RetworkXStrDiGraph
 
@@ -41,7 +39,7 @@ def digraph_all_simple_paths(
 
     output = []
     visited_paths = set()
-    for nodes in retworkx.digraph_all_simple_paths(
+    for nodes in rustworkx.digraph_all_simple_paths(
         g._graph, source, target, min_depth, cutoff
     ):
         path_id = tuple(nodes)
@@ -66,7 +64,7 @@ def dag_longest_path(g: _RetworkXDiGraph[NodeID, EdgeKey, Node, Edge]) -> list[N
 
     Return a list of nodes of the longest path in DAG
     """
-    path = retworkx.dag_longest_path(g._graph)
+    path = rustworkx.dag_longest_path(g._graph)
     if not isinstance(g, RetworkXStrDiGraph):
         return path
     return [g._graph.get_node_data(uid).id for uid in path]
@@ -78,7 +76,7 @@ def is_weakly_connected(g: _RetworkXDiGraph[NodeID, EdgeKey, Node, Edge]) -> boo
     Args:
         g: The graph to check
     """
-    return retworkx.is_weakly_connected(g._graph)
+    return rustworkx.is_weakly_connected(g._graph)
 
 
 def weakly_connected_components(
@@ -92,7 +90,7 @@ def weakly_connected_components(
 
     Return a list of lists where each inner list is a weakly connected component
     """
-    connected_components = retworkx.weakly_connected_components(g._graph)
+    connected_components = rustworkx.weakly_connected_components(g._graph)
     if not isinstance(g, RetworkXStrDiGraph):
         return connected_components
     return [
@@ -103,7 +101,7 @@ def weakly_connected_components(
 
 def has_cycle(g: _RetworkXDiGraph[NodeID, EdgeKey, Node, Edge]) -> bool:
     """Test if graph has cycle"""
-    return not retworkx.is_directed_acyclic_graph(g._graph)
+    return not rustworkx.is_directed_acyclic_graph(g._graph)
 
 
 def digraph_find_cycle(
@@ -119,7 +117,7 @@ def digraph_find_cycle(
     """
     if isinstance(g, RetworkXStrDiGraph):
         source = g.idmap[source]
-    cycle = retworkx.digraph_find_cycle(g._graph, source)
+    cycle = rustworkx.digraph_find_cycle(g._graph, source)
     return [g._graph.get_edge_data(uid, vid) for uid, vid in cycle]
 
 
@@ -134,6 +132,6 @@ def topological_sort(g: _RetworkXDiGraph[NodeID, EdgeKey, Node, Edge]) -> list[N
     if isinstance(g, RetworkXStrDiGraph):
         return [
             g._graph.get_node_data(uid).id
-            for uid in retworkx.topological_sort(g._graph)
+            for uid in rustworkx.topological_sort(g._graph)
         ]
-    return list(retworkx.topological_sort(g._graph))
+    return list(rustworkx.topological_sort(g._graph))

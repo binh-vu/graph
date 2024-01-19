@@ -1,5 +1,4 @@
 from copy import copy, deepcopy
-import warnings
 from typing import (
     Any,
     Callable,
@@ -13,7 +12,7 @@ from typing import (
 from graph.interface import Edge, EdgeKey, IGraph, Node, NodeID
 from typing_extensions import Self
 
-from retworkx import NoEdgeBetweenNodes, PyDiGraph, ancestors, descendants  # type: ignore
+from rustworkx import NoEdgeBetweenNodes, PyDiGraph, ancestors, descendants  # type: ignore
 
 
 class _RetworkXDiGraph(IGraph[NodeID, int, EdgeKey, Node, Edge]):
@@ -363,19 +362,19 @@ class _RetworkXDiGraph(IGraph[NodeID, int, EdgeKey, Node, Edge]):
             other._graph.edge_index_map().items()
         )
 
-    def __setstate__(self, state):
-        """Reload the state of the graph. This function is often called in pickling and copy
-        This does not guarantee to keep the same edge id.
+    # def __setstate__(self, state):
+    #     """Reload the state of the graph. This function is often called in pickling and copy
+    #     This does not guarantee to keep the same edge id.
 
-        """
-        self.__dict__ = dict.copy(state)
-        for eid, (_, _, edge) in self._graph.edge_index_map().items():
-            # need to copy as we may serialize an object containing two graphs that share
-            # same edges by reference
-            edge = copy(edge)
-            edge.id = eid
-            self._graph.update_edge_by_index(eid, edge)
-        return self
+    #     """
+    #     self.__dict__ = dict.copy(state)
+    #     for eid, (_, _, edge) in self._graph.edge_index_map().items():
+    #         # need to copy as we may serialize an object containing two graphs that share
+    #         # same edges by reference
+    #         edge = copy(edge)
+    #         edge.id = eid
+    #         self._graph.update_edge_by_index(eid, edge)
+    #     return self
 
 
 class RetworkXDiGraph(_RetworkXDiGraph[int, EdgeKey, Node, Edge]):

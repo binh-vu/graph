@@ -13,7 +13,7 @@ from typing import (
 from copy import deepcopy
 from typing_extensions import Self
 from graph.retworkx.digraph import _RetworkXDiGraph
-from retworkx import NoEdgeBetweenNodes  # type: ignore
+from rustworkx import NoEdgeBetweenNodes  # type: ignore
 
 from graph.interface import IGraph, EdgeKey, BaseEdge, BaseNode
 

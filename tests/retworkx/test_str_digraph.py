@@ -90,10 +90,10 @@ class TestPickle:
         ]
         assert g.edges() == [
             StrEdge("A", "B", id=0),
-            StrEdge("B", "C", id=1),
-            StrEdge("A", "C", id=2),
+            StrEdge("A", "C", id=1),
+            StrEdge("B", "C", id=2),
         ]
-        assert g != graph1_
+        assert g == graph1_
 
     @staticmethod
     def test_pickle_node_deletion(graph1: TestDiGraph):
@@ -106,9 +106,9 @@ class TestPickle:
             StrNode("C"),
         ]
         assert g.edges() == [
-            StrEdge("A", "C", id=0),
+            StrEdge("A", "C", id=1),
         ]
-        assert g != graph1_
+        assert g == graph1_
 
     @staticmethod
     def test_pickle_edge_deletion(graph1: TestDiGraph):
@@ -122,7 +122,7 @@ class TestPickle:
             StrNode("C"),
         ]
         assert g.edges() == [
-            StrEdge("B", "C", id=0),
             StrEdge("A", "C", id=1),
+            StrEdge("B", "C", id=2),
         ]
-        assert g != graph1_
+        assert g == graph1_
