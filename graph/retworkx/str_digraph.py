@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import (
     Any,
     Dict,
@@ -10,13 +11,11 @@ from typing import (
     TypeVar,
     Union,
 )
-from copy import deepcopy
-from typing_extensions import Self
+
+from graph.interface import BaseEdge, BaseNode, EdgeKey, IGraph
 from graph.retworkx.digraph import _RetworkXDiGraph
 from rustworkx import NoEdgeBetweenNodes  # type: ignore
-
-from graph.interface import IGraph, EdgeKey, BaseEdge, BaseNode
-
+from typing_extensions import Self
 
 Node = TypeVar("Node", bound=BaseNode[str])
 Edge = TypeVar("Edge", bound=BaseEdge[str, Any])
@@ -84,6 +83,14 @@ class RetworkXStrDiGraph(
     def predecessors(self, nid: str) -> List[Node]:
         """Get the predecessors of a node"""
         return self._graph.predecessors(self.idmap[nid])
+
+    def ancestors(self, nid: str) -> List[Node]:
+        """Get the ancestors of a node"""
+        return super().ancestors(self.idmap[nid])  # type: ignore
+
+    def descendants(self, nid: str) -> List[Node]:
+        """Get the descendants of a node"""
+        return super().descendants(self.idmap[nid])  # type: ignore
 
     def add_edge(self, edge: Edge) -> int:
         """Add an edge between 2 nodes and return id of the new edge"""
