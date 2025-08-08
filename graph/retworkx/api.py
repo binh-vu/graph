@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from itertools import product
 from typing import Optional
+
 import rustworkx
+
 from graph.retworkx.digraph import Edge, EdgeKey, Node, NodeID, _RetworkXDiGraph
 from graph.retworkx.str_digraph import RetworkXStrDiGraph
 
@@ -80,7 +82,7 @@ def is_weakly_connected(g: _RetworkXDiGraph[NodeID, EdgeKey, Node, Edge]) -> boo
 
 
 def weakly_connected_components(
-    g: _RetworkXDiGraph[NodeID, EdgeKey, Node, Edge]
+    g: _RetworkXDiGraph[NodeID, EdgeKey, Node, Edge],
 ) -> list[set[NodeID]]:
     """
     Return the weakly connected components of the graph
@@ -135,3 +137,24 @@ def topological_sort(g: _RetworkXDiGraph[NodeID, EdgeKey, Node, Edge]) -> list[N
             for uid in rustworkx.topological_sort(g._graph)
         ]
     return list(rustworkx.topological_sort(g._graph))
+
+
+def has_path(
+    g: _RetworkXDiGraph[NodeID, EdgeKey, Node, Edge],
+    source: NodeID,
+    target: NodeID,
+    as_undirected: bool = False,
+):
+    """Checks if a path exists between a source and target node.
+
+    Args:
+        g: The graph to check
+        source: The source node
+        target: The target node
+        as_undirected: Whether to treat the graph as undirected
+    """
+    if isinstance(g, RetworkXStrDiGraph):
+        source = g.idmap[source]
+        target = g.idmap[target]
+
+    return rustworkx.has_path(g._graph, source, target, as_undirected=as_undirected)

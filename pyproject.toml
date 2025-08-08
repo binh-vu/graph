@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "graph-wrapper"
-version = "1.7.3"
+version = "1.8.0"
 description = "Wrappers of popular network libraries with type annotation"
 authors = ["Binh Vu <binh@toan2.com>"]
 license = "MIT"
